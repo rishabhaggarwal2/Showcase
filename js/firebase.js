@@ -10,7 +10,7 @@ firebase.initializeApp(config);
 var database = firebase.database();
 
 function writeEventData(name, location, time, date, imageUrl, mapData, booths) {
-  firebase.database().ref('events/' + name).set({
+  database.ref('events/' + name).set({
     location: location,
     time: time,
     date: date,
@@ -38,6 +38,7 @@ function addNewBooth(boothName,FBlink,tags,gridLocation,eventName) {
   var updates = {};
   updates['/booths/' + newPostKey] = postData;
   //updates['/user-posts/' + uid + '/' + newPostKey] = postData;?
+
 
   return firebase.database().ref().update(updates);
 }
