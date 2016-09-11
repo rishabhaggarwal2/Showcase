@@ -195,6 +195,27 @@ body,html{
 	}
 }
 
+.title{
+	color:#fff;
+	margin-bottom:20px;
+
+	h1{
+		line-height:1;
+		margin:0;
+		padding:0;
+		margin-bottom:10px;
+	}
+	span{
+		margin-right: 10px;
+	}
+}
+
 .searchResult:hover{
 	background:$midBlue;
+}
+
+a.noDecoration{
+	text-decoration: none;
+	outline:none;
+	color:inherit;
 }

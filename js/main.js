@@ -7,7 +7,7 @@
  * Main AngularJS Web Application
  */
 var app = angular.module('ymaaSPA', [
-  'ngRoute'
+  'ngRoute', 'firebase'
 ]);
 
 var eventList = 
@@ -49,6 +49,7 @@ app.config(['$routeProvider', function ($routeProvider) {
   $routeProvider
     // Home
     .when("/", {templateUrl: "partials/home.html", controller: "HomeCtrl"})
+    .when("/:event_name", {templateUrl: "../partials/event.html", controller: "EventCtrl"})
     // Pages
     .when("/about", {templateUrl: "partials/about.html", controller: "PageCtrl"})
     .when("/research", {templateUrl: "partials/research.html", controller: "PageCtrl"})
@@ -59,8 +60,9 @@ app.config(['$routeProvider', function ($routeProvider) {
 /**
  * Controls the Home
  */
-app.controller('HomeCtrl', function ($scope/* $scope, $location, $http */) {
-  $scope.events = eventList;
+app.controller('HomeCtrl', function ($scope, $firebaseArray/* $scope, $location, $http */) {
+  var ref = firebase.database().ref().child("events");
+  $scope.events = $firebaseArray(ref);
   $scope.creating = false;
   $scope.flip = "";
 
@@ -79,15 +81,61 @@ app.controller('HomeCtrl', function ($scope/* $scope, $location, $http */) {
   };
 
   $scope.submitEvent = function(){
-
+    if(!$scope.mapData){
+      $scope.mapData = "";
+    }
+    if(!$scope.fburl){
+      $scope.fburl = "";
+    }
+    writeEventData($scope.name, $scope.location, $scope.time, $scope.date, $scope.fburl, $scope.imgurl, $scope.mapData);
+    $scope.createNew();
   };
 
 });
 
+// Controls the Event Page
+
+app.controller('EventCtrl', function ($scope, $firebaseArray, $firebaseObject, $routeParams/* $scope, $location, $http */) {
+  
+  var eventName = $routeParams.event_name;
+
+  var ref = firebase.database().ref().child("events").child(eventName);
+  $scope.event = $firebaseObject(ref);;
+  
+  $scope.booths = $firebaseArray(firebase.database().ref().child("events").child(eventName).child("booths"));
+
+  $scope.creating = false;
+  $scope.flip = "";
+
+  $scope.createNew = function(){
+    if($scope.flip == "") {
+      $scope.creating = true;
+      $scope.name = $scope.boothSearch;
+      $scope.boothSearch = "#21";
+      $scope.flip = "flip";
+    }
+    else {
+      $scope.creating = false;
+      $scope.boothSearch = "";
+      $scope.flip = ""; 
+    }
+  };
+
+  $scope.submitEvent = function(){
+    if(!$scope.mapData){
+      $scope.mapData = "";
+    }
+    if($scope.fburl && $scope.name){
+      writeBoothData($scope.event.name, $scope.name, $scope.location, $scope.fburl, $scope.categories, $scope.mapData);
+      $scope.createNew();
+    }
+  };
+
+});
 /**
  * Controls all other Pages
  */
-app.controller('PageCtrl', function ($scope/* $scope, $location, $http */) {
+app.controller('PageCtrl', function ($scope, $routeParams) {
   // console.log("Page Controller reporting for duty.");
 });
 

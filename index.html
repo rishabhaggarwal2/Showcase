@@ -43,10 +43,19 @@
 <!-- Vendor: Angular, followed by our custom Javascripts -->
 <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.18/angular.min.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.18/angular-route.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/3.3.2/firebase.js"></script>
+<script src="https://cdn.firebase.com/libs/angularfire/2.0.1/angularfire.min.js"></script>
+<script src="js/firebase.js"></script>
 
 <!-- Our Website Javascripts -->
 <script src="js/main.js"></script>
-<script src="https://www.gstatic.com/firebasejs/3.3.2/firebase.js"></script>
-<script src="js/firebase.js"></script>
 </body>
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.7&appId=268319283543610";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
 </html>

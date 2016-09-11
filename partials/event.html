@@ -2,6 +2,12 @@
   <div class="container-fluid">
     <div class="container"> 
       <div class="eventSearch">
+        <div class="title"">
+            <h1>{{event.name}}</h1>
+            <span>{{event.location}}</span>
+            <span>{{event.date}}</span>
+            <span>{{event.time}}</span>
+          </div>
         <div class="search">
           <div class="createNew animate-show" ng-show="creating">
             <div class="createField">
@@ -13,37 +19,25 @@
               <input required type="text" name="location" ng-model="location" placeholder="Location">
             </div>
             <div class="createField">
-              <label for="date">Date</label>
-              <input required type="text" name="date" ng-model="date" placeholder="Date">
-            </div>
-            <div class="createField">
-              <label for="time">Time</label>
-              <input required type="text" name="time" ng-model="time" placeholder="Time">
-            </div>
-            <div class="createField">
               <label for="fburl">Website/Facebook URL</label>
               <input required type="text" name="fburl" ng-model="fburl" placeholder="Website/Facebook URL">
             </div>
             <div class="createField">
-              <label for="imgurl">Map Image URL</label>
-              <input required type="text" name="imgurl" ng-model="imgurl" placeholder="Map Image URL">
+              <label for="categories">Categories</label>
+              <input required type="text" name="categories" ng-model="categories" placeholder="Categories">
             </div>
             <div class="createField">
               <input type="submit" value="Submit" ng-click="submitEvent()" class="eventSubmit">
               </button>
             </div>
           </div>
-          <input type="text" ng-model="eventSearch" ng-hide="creating" placeholder="Search" />
+          <input type="text" ng-model="boothSearch" ng-hide="creating" placeholder="Search" />
           <a class="searchButton" ng-click="createNew()" ng-class="flip"><i class="fa fa-plus fa-2x"></i></a>
         </div>
-        <a ng-href="/#/{{event.name}}" ng-repeat="event in events | filter:eventSearch" class="noDecoration">
-          <div class="searchResult">
-            <b>{{event.name}}</b><br>
-            <span>{{event.location}}</span>
-            <span>{{event.date}}</span>
-            <span>{{event.time}}</span>
-          </div>
-        </a>
+        <div class="searchResult" ng-repeat="booth in booths | filter:boothSearch">
+          <b>{{booth.boothName}}</b><br>
+          <span>{{booth.location}}</span>
+        </div>
       </div>
     </div>
   </div>
