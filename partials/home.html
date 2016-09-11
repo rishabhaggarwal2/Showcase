@@ -26,9 +26,10 @@
             </div>
             <div class="createField">
               <label for="imgurl">Map Image URL</label>
-              <input required type="text" name="imgurl" ng-model="imgurl" placeholder="Map Image URL">
+              <input required type="text" name="imgurl" ng-model="imgurl" placeholder="Map Image URL" id="mapFile">
             </div>
             <div class="createField">
+              <input type="button" name="" class="eventSubmit" value="Create Grid" ng-click="createGrid()">
               <label>Map</label>
               <canvas id="c"></canvas>
             </div>

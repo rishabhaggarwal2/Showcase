@@ -57,21 +57,95 @@ app.config(['$routeProvider', function ($routeProvider) {
     .otherwise("/404", {templateUrl: "partials/404.html", controller: "PageCtrl"});
 }]);
 
+function initCanvas(canvas, mapSizeRect){
+  var grid = 20;
+  this.canvas = canvas;
+
+  $("#mapFile").change(function(){
+    canvas.setBackgroundImage($(this).val(), canvas.renderAll.bind(canvas), {
+      width: canvas.width,
+      height: canvas.height
+    });
+  });
+
+  canvas.add(mapSizeRect);
+  mapSizeRect.on('moving', function(){
+    t = this.top;
+    l = this.left;
+    if(this.top < 0)
+      t = 0;
+    if(this.left < 0)
+      l = 0;
+    if(this.left > 800 - this.width)
+      l = 800 - this.width;
+    if(this.top > 600 - this.height)
+      t = 600 - this.height;
+
+    t = Math.round(t/grid) * grid;
+    l = Math.round(l/grid) * grid;
+
+    this.set({
+      'left' : l,
+      'top' : t
+    });
+  });
+
+  mapSizeRect.on('scaling', function() { 
+    w = Math.round(this.width * this.scaleX / grid) * grid;
+    h = Math.round(this.height * this.scaleY / grid) * grid;
+    t = Math.round(this.top/grid) * grid;
+    l = Math.round(this.left/grid) * grid;
+    s = this.strokeWidth;
+
+    this.set({
+        'scaleX'     : 1,
+        'scaleY'     : 1,
+        'top' : t,
+        'left'  : l
+    });
+
+    this.setWidth(w);
+    this.setHeight(h);
+  });
+}
+
 /**
  * Controls the Home
  */
 app.controller('HomeCtrl', function ($scope, $firebaseArray/* $scope, $location, $http */) {
+  var gridStore = "";
   var ref = firebase.database().ref().child("events");
   $scope.events = $firebaseArray(ref);
   $scope.creating = false;
   $scope.flip = "";
 
+  //Canvas 
+  canvas = new fabric.Canvas('c', {selection: false});
+  var mapSizeRect = new fabric.Rect({ 
+    left: 50, 
+    top: 50, 
+    width: 50, 
+    height: 50, 
+    fill: '#9f9', 
+    originX: 'left', 
+    originY: 'top',
+    lockRotation: true,
+    hasRotatingPoint: false
+  });
+
+  //og
   $scope.createNew = function(){
     if($scope.flip == "") {
       $scope.creating = true;
       $scope.name = $scope.eventSearch;
       $scope.eventSearch = "#21";
       $scope.flip = "flip";
+      
+      //Canvas Init
+      canvas.setHeight(600);
+      canvas.setWidth(800);
+      canvas.renderAll();
+      initCanvas(canvas, mapSizeRect);
     }
     else {
       $scope.creating = false;
@@ -81,6 +155,7 @@ app.controller('HomeCtrl', function ($scope, $firebaseArray/* $scope, $location,
   };
 
   $scope.submitEvent = function(){
+    saveAll();
     if(!$scope.mapData){
       $scope.mapData = "";
     }
@@ -91,6 +166,67 @@ app.controller('HomeCtrl', function ($scope, $firebaseArray/* $scope, $location,
     $scope.createNew();
   };
 
+  /////////////////////////////////////////////////////
+  ////////////////////////////////////////////////
+  /////////////////////////////////////////////
+  var gridArray = [];
+
+  $scope.createGrid = function(){
+    var grid = 20;
+    for (var i = 0; i < mapSizeRect.height/grid; i++) {
+      gridArray[i] = [];
+      for(var j = 0; j < mapSizeRect.width/grid; j++){
+        gridArray[i][j] = {};
+        gridArray[i][j] = new fabric.Rect({ 
+          left: mapSizeRect.left + j * grid, 
+          top: mapSizeRect.top + i * grid, 
+          width: grid, 
+          height: grid, 
+          fill: '#090', 
+          originX: 'left', 
+          originY: 'top',
+          hasControls: false,
+          hasBorders: false,
+          stroke: 'white',
+          strokeWidth: 1,
+          hasRotatingPoint: false,
+          lockMovementX: true,
+          lockMovementY: true,
+          enabled: true,
+          opacity: 0.5,
+          coords: {x: i, y: j}
+        });
+        canvas.add(gridArray[i][j]);
+        gridArray[i][j].on("mousedown", function(gridArra){
+          this.fill = "#900";
+          this.enabled = false;
+        });
+      };
+    };
+    mapSizeRect.remove();
+    canvas.renderAll();
+    gridStore = gridArray;
+  }
+
+
+  function saveAll(){
+    tempArray = [];
+    for (var i = 0; i < gridArray.length; i++) {
+      tempArray[i] = [];
+      for(var j = 0; j < gridArray[i].length; j++){
+        tempArray[i][j] = {enabled : (gridArray[i][j].enabled == true ? 1 : 0), coords: gridArray[i][j].coords};
+      }
+    };
+
+    gridObject = {mapdata: tempArray, start: [gridArray[0][0].left, gridArray[0][0].top]};
+    gridStore = gridObject;
+    // canvas.clear();
+    // gridArray = [];
+    // gridArray = redraw();
+    $scope.mapData = gridObject;
+    return gridObject;
+    console.log(gridObject);
+  }
 });
 
 // Controls the Event Page
@@ -101,7 +237,7 @@ app.controller('EventCtrl', function ($scope, $firebaseArray, $firebaseObject, $
 
   var ref = firebase.database().ref().child("events").child(eventName);
   $scope.event = $firebaseObject(ref);;
-  
+
   $scope.booths = $firebaseArray(firebase.database().ref().child("events").child(eventName).child("booths"));
 
   $scope.creating = false;

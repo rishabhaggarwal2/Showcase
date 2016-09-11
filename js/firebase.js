@@ -28,6 +28,7 @@ function writeBoothData(eventName, boothName, location, fburl, categories, mapDa
     event: eventName,
     boothName: boothName,
     location: location,
+    categories: categories,
     fburl: fburl,
     mapData: mapData
   };
