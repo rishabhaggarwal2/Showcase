@@ -1,21 +1,11 @@
-// $white: #fff;
-// $offWhite: #f9f9f9;
-
-// $darkerBlue: rgb(0, 14, 19);
-// $darkBlue: #00171F;
-// $blue: #003459;
-// $midBlue: #007EA7;
-// $lightBlue: #00A8E8;
-
-//Alternate
-$white: #444;
+$white: #fff;
 $offWhite: #f9f9f9;
 
-$darkerBlue: #e8e8e8;
-$darkBlue: #f9f9f9;
-$blue: #f3f3f3;
-$midBlue: #eee;
-$lightBlue: #999;
+$darkerBlue: rgb(0, 14, 19);
+$darkBlue: #00171F;
+$blue: #003459;
+$midBlue: #007EA7;
+$lightBlue: #00A8E8;
 
 $tablet:767px;
 $desktop:1199px;
@@ -68,7 +58,6 @@ body,html{
 }
 .showcase{
 	background:url('../assets/images/backDark.png') no-repeat;
-	background:url('../assets/images/back.png') no-repeat;
 	background-size: 100% auto;
 }
 .eventSearch{
@@ -97,7 +86,7 @@ body,html{
 		flex:1 1 auto;
 		font-weight:400;
 		width:80%;
-		color:$white;
+		color:$midBlue;
 	}
 	::-webkit-input-placeholder {
 		color:$darkBlue;
@@ -111,23 +100,30 @@ body,html{
 		cursor: pointer;
 	}
 	input:focus + .searchButton{
-		color:$lightBlue;	
+		color:$blue;	
 	}
 	.searchButton:hover, input:focus + .searchButton:hover{
-		color:#666;
+		color:$midBlue;
 	}
 	.searchButton.flip{
 		margin-bottom: auto;
 		-webkit-transform: rotate(45deg);
-		color:$lightBlue;
+		color:$midBlue;
 	}
 	.searchButton.flip:hover{
-		color:#666;
+		color:$lightBlue;
 	}
 	.createNew{
 		padding:20px 0px 0px 0px;
 		flex:1 1 auto;
 		width:80%;
+
+		::-webkit-input-placeholder {
+			color:$blue;
+		}
+		::-moz-placeholder {
+			color:$blue;
+		}
 
 		input{
 			line-height: 1;
@@ -136,7 +132,7 @@ body,html{
 		}
 
 		.eventSubmit{
-			background:#fff;
+			background:$lightBlue;
 			color:$white;
 			font-size:14px;
 			text-transform:uppercase;
@@ -147,7 +143,7 @@ body,html{
 		}
 
 		label{
-			color:$white;
+			color:#fff;
 			text-transform: uppercase;
 			font-size:12px;
 			font-weight:300;
@@ -179,8 +175,7 @@ body,html{
 	text-align: left;
 	padding: 20px;
 	color:$white;
-	background:$blue;
-	// background:rgba(0,0,0,0.5);
+	background:rgba(0,0,0,0.5);
 	cursor:pointer;
 
 	b{
@@ -201,7 +196,7 @@ body,html{
 }
 
 .title{
-	color:$white;
+	color:#fff;
 	margin-bottom:20px;
 
 	h1{
