@@ -7,6 +7,9 @@
 			background: transparent;
 			width: 800px;
 			height: 600px;
+		    background-repeat: no-repeat;
+    		background-position: center center;
+    		background-size: contain;
 		}
 
 		#lafile {
@@ -14,17 +17,227 @@
 		}
 	</style>
 	<script type="text/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+	<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/fabric.js/1.6.4/fabric.min.js"></script>
 </head>
 <body>
-	<input id="lafile">
-	<canvas>
+	<input id="lafile" placeholder="mapurl"><input id="lagrid" placeholder="grid size">  <button id="createGrid">Set Area</button> <button id="save" disabled>Save</button>
+	<button id="addBooth">Add Booth</button>
+	<canvas id="c">
 		
 	</canvas>
 	<script type="text/javascript">
 		$(document).ready(function(){
-			$("#lafile").change(function () {
-				$("canvas").css("background-image", "url('"+$("#lafile").val()+"')");
+			var grid = 50;
+			var gridSet = false;
+			var gridArray;
+			canvas = new fabric.Canvas('c', { selection: false });
+			canvas.setHeight(600);
+			canvas.setWidth(800);
+			canvas.renderAll();
+			canvas.renderOnAddRemove = true;
+
+			$("#lagrid").change(function() {
+				console.log($("#lagrid").val());
+				grid = $("#lagrid").val();
+				console.log(grid);
 			});
+
+			$("#lafile").change(function () {
+				canvas.setBackgroundImage($("#lafile").val(), canvas.renderAll.bind(canvas), {
+				  width: canvas.width,
+				  height: canvas.height,
+				  // Needed to position backgroundImage at 0/0
+				  originX: 'left',
+				  originY: 'top'
+				});
+			});
+
+			$("#createGrid").on("click", function(){
+				gridArray = createGrid();
+				mapSize.remove();
+				$("#save").prop('disabled', false);
+			});
+
+			var mapSize = new fabric.Rect({ 
+                  left: 100, 
+                  top: 100, 
+                  width: 200, 
+                  height: 300, 
+                  fill: '#9f9', 
+                  originX: 'left', 
+                  originY: 'top',
+                  lockRotation: true,
+            });
+            canvas.add(mapSize);
+            canvas.renderAll();
+            mapSize.on('moving', function(){
+            	var obj = this;
+            	t = obj.top;
+            	l = obj.left;
+            	if(obj.top < 0)
+            		t = 0;
+            	if(obj.left < 0)
+            		l = 0;
+            	if(obj.left > 800 - obj.width)
+            		l = 800 - obj.width;
+            	if(obj.top > 600 - obj.height)
+            		t = 600 - obj.height;
+
+		        t = Math.round(t/grid) * grid;
+		        l = Math.round(l/grid) * grid;
+
+            	obj.set({
+            		'left' : l,
+            		'top' : t
+            	});
+
+            });
+            mapSize.on('scaling', function() { 
+            	var obj = this;
+            	console.log(obj);
+		        w = Math.round(obj.width * obj.scaleX / grid) * grid;
+		        h = Math.round(obj.height * obj.scaleY / grid) * grid;
+		        t = Math.round(obj.top/grid) * grid;
+		        l = Math.round(obj.left/grid) * grid;
+		        s = obj.strokeWidth;
+
+			    obj.set({
+			        'scaleX'     : 1,
+			        'scaleY'     : 1,
+			        'top'	: t,
+			        'left'	: l
+			    });
+
+			    obj.setWidth(w);
+			    obj.setHeight(h);
+			});
+
+			function createGrid(){
+				var gridArray = [];
+    			for (var i = 0; i < mapSize.height/grid; i++) {
+    				gridArray[i] = [];
+    				for(var j = 0; j < mapSize.width/grid; j++){
+    					gridArray[i][j] = {};
+    					gridArray[i][j] = new fabric.Rect({ 
+						                left: mapSize.left + j * grid, 
+						                top: mapSize.top + i * grid, 
+						                width: grid, 
+						                height: grid, 
+						                fill: '#090', 
+						                originX: 'left', 
+						                originY: 'top',
+						                hasControls: false,
+						                hasBorders: false,
+						                hasRotatingPoint: false,
+						                lockMovementX: true,
+						                lockMovementY: true,
+						                enabled: true,
+						                coords: {x: i, y: j}
+						            });
+    					canvas.add(gridArray[i][j]);
+    					gridArray[i][j].on("mousedown", function(gridArra){
+    						this.fill = "#900";
+    						this.enabled = false;
+    					});
+    				};
+    			};
+
+                canvas.renderAll();
+                return gridArray;
+			}
+
+			var gridStore = "";
+
+			$("#save").click(saveAll);
+
+			function saveAll(){
+				tempArray = [];
+				for (var i = 0; i < gridArray.length; i++) {
+					tempArray[i] = [];
+					for(var j = 0; j < gridArray[i].length; j++){
+						tempArray[i][j] = {enabled : (gridArray[i][j].enabled == true ? 1 : 0), coords: gridArray[i][j].coords};
+					}
+				};
+
+				gridObject = {mapdata: tempArray, start: [gridArray[0][0].left, gridArray[0][0].top]};
+				gridStore = gridObject;
+				canvas.clear();
+				gridArray = [];
+				gridArray = redraw();
+				return gridObject;
+				console.log(gridObject);
+			}
+
+			function redraw(){
+				var gridArray = [];
+				if(gridStore != ""){
+					canvas.clear();
+	    			for (var i = 0; i < gridStore.mapdata.length; i++) {
+	    				gridArray[i] = [];
+	    				for(var j = 0; j < gridStore.mapdata[i].length; j++){
+	    					gridArray[i][j] = {};
+	    					gridArray[i][j] = new fabric.Rect({ 
+							                left: gridStore.start[0] + j * grid, 
+							                top: gridStore.start[1] + i * grid, 
+							                width: grid, 
+							                height: grid, 
+							                fill: '#090', 
+							                originX: 'left', 
+							                originY: 'top',
+							                hasControls: false,
+							                hasBorders: false,
+							                hasRotatingPoint: false,
+							                lockMovementX: true,
+							                lockMovementY: true,
+							                enabled: gridStore.mapdata[i][j].enabled,
+							                coords: gridStore.mapdata[i][j].coords
+							            });
+	    					canvas.add(gridArray[i][j]);
+	    					if(gridArray[i][j].enabled == false)
+	    						gridArray[i][j].fill = "#900";
+	    					// gridArray[i][j].on("mousedown", function(gridArra){
+	    					// 	this.fill = "#900";
+	    					// 	this.enabled = false;
+	    					// });
+	    				};
+	    			};
+				}
+
+				return gridArray;
+			};
+
+			$("#addBooth").click(addBooth);
+
+			var boothCount = 0;
+
+			function addBooth(){
+				// for (var i = 0; i < gridArray.length; i++) {
+				// 	for(var j = 0; j < gridArray[i].length; j++){
+				// 		gridArray[i][j].off("mousedown");
+				// 	}
+					
+				// };
+
+				for (var i = 0; i < gridArray.length; i++) {
+					for(var j = 0; j < gridArray[i].length; j++){
+						if(gridArray[i][j].enabled == true)
+							gridArray[i][j].on("mousedown", function(){
+								addText(this);
+								// this.fill = "#090";
+								// this.enabled = true;
+								canvas.renderAll();	
+							});
+					}
+					
+				};
+				
+			};
+
+			function addText(rect){
+				var text = new fabric.Text(++boothCount + '', { left: rect.left, top: rect.top});
+				canvas.add(text);
+				canvas.renderAll();	
+			}
 		});
 	</script>
 </body>
