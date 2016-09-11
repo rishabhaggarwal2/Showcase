@@ -198,6 +198,19 @@ body,html{
 		margin-left:10px;
 		vertical-align: top;
 	}
+	.categories{
+		span{
+			padding: 2px 4px;
+			background: #ddd;
+			border-radius: 4px;
+			font-size: 12px;
+			white-space: inherit;
+			margin-right: 5px;
+		}
+		span::after{
+			margin-left:0;
+		}
+	}
 }
 
 .title{

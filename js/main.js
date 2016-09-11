@@ -145,6 +145,7 @@ app.controller('HomeCtrl', function ($scope, $firebaseArray/* $scope, $location,
       canvas.setHeight(600);
       canvas.setWidth(800);
       canvas.renderAll();
+      canvas.clear();
       initCanvas(canvas, mapSizeRect);
     }
     else {
@@ -164,6 +165,7 @@ app.controller('HomeCtrl', function ($scope, $firebaseArray/* $scope, $location,
     }
     writeEventData($scope.name, $scope.location, $scope.time, $scope.date, $scope.fburl, $scope.imgurl, $scope.mapData);
     $scope.createNew();
+    canvas.clear();
   };
 
   /////////////////////////////////////////////////////
@@ -236,19 +238,104 @@ app.controller('EventCtrl', function ($scope, $firebaseArray, $firebaseObject, $
   var eventName = $routeParams.event_name;
 
   var ref = firebase.database().ref().child("events").child(eventName);
-  $scope.event = $firebaseObject(ref);;
+  $scope.event = $firebaseObject(ref);
+  console.log($scope.event);
 
   $scope.booths = $firebaseArray(firebase.database().ref().child("events").child(eventName).child("booths"));
 
   $scope.creating = false;
   $scope.flip = "";
 
+  //Canvas 
+  canvas = new fabric.Canvas('c', {selection: false});
+  var gridData = [];
+  grid = 20;
+  var chosen = {};
+  chosen.x = -1;
+  chosen.y = -1;
+
+  function initBoothCanvas(canvas) {
+    canvas.setBackgroundImage($scope.event.imgurl, canvas.renderAll.bind(canvas), {
+      width: canvas.width,
+      height: canvas.height
+    });
+    for(var i = 0; i < $scope.event.mapData.mapdata.length; i++){
+      gridData[i] = [];
+      for(var j = 0; j < $scope.event.mapData.mapdata[i].length; j++){
+        var color = "#900";
+        var enabled = $scope.event.mapData.mapdata[i][j].enabled;
+        if(enabled == true){
+          color = "#090";
+        }
+
+        if($scope.event.mapData.mapdata[i][j].booth){
+          color = "#009";
+          enabled = false;
+        }
+
+        gridData[i][j] = new fabric.Rect({ 
+          left: $scope.event.mapData.start[0] + j * grid, 
+          top: $scope.event.mapData.start[1] + i * grid, 
+          width: grid, 
+          height: grid, 
+          fill: color, 
+          originX: 'left', 
+          originY: 'top',
+          hasControls: false,
+          hasBorders: false,
+          stroke: 'white',
+          strokeWidth: 1,
+          hasRotatingPoint: false,
+          lockMovementX: true,
+          lockMovementY: true,
+          enabled: enabled,
+          opacity: 0.5,
+          coords: {x: $scope.event.mapData.mapdata[i][j].coords.x, y: $scope.event.mapData.mapdata[i][j].coords.y},
+          booth: $scope.event.mapData.mapdata[i][j].booth || ""
+        });
+        canvas.add(gridData[i][j]);
+        if(gridData[i][j].enabled == true){
+          gridData[i][j].on("mousedown", function(){
+            //choose(i,j);
+            if(chosen.x == -1 || chosen.y == -1){
+              chosen.x = this.coords.x; chosen.y = this.coords.y;
+              this.fill = "#009";
+            }else{
+              gridData[chosen.x][chosen.y].fill = "#090";
+              this.fill = "#009";
+              chosen.x = this.coords.x; chosen.y = this.coords.y;
+            }
+          });  
+        }
+      }
+    }
+  }
+
+  function choose(i, j){
+    console.log(i + " " + j);
+    if(chosen.x == -1 || chosen.y == -1){
+      chosen.x = i; chosen.y = j;
+      gridData[i][j].fill = "#009";
+    }else{
+      gridData[chosen.x][chosen.y].fill = "#090";
+      gridData[i][j].fill = "#009";
+      chosen.x = i; chosen.y = j;
+    }
+  }
+
   $scope.createNew = function(){
+    canvas.setHeight(600);
+    canvas.setWidth(800);
+    canvas.renderAll();
     if($scope.flip == "") {
       $scope.creating = true;
       $scope.name = $scope.boothSearch;
       $scope.boothSearch = "#21";
       $scope.flip = "flip";
+
+      //Canvas Init
+      canvas.clear();
+      initBoothCanvas(canvas);
     }
     else {
       $scope.creating = false;
@@ -262,7 +349,11 @@ app.controller('EventCtrl', function ($scope, $firebaseArray, $firebaseObject, $
       $scope.mapData = "";
     }
     if($scope.fburl && $scope.name){
-      writeBoothData($scope.event.name, $scope.name, $scope.location, $scope.fburl, $scope.categories, $scope.mapData);
+      $scope.mapData = gridData;
+      //gridData[chosen.x][chosen.y].booth = $scope.name;
+      gridData[chosen.x][chosen.y].enabled = false;
+      writeBoothData($scope.event.name, $scope.name, $scope.location, $scope.fburl, $scope.categories, gridData, chosen);
+      canvas.clear();
       $scope.createNew();
     }
   };

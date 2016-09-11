@@ -38,10 +38,15 @@
           <input type="text" ng-model="boothSearch" ng-hide="creating" placeholder="Search" />
           <a class="searchButton" ng-click="createNew()" ng-class="flip"><i class="fa fa-plus fa-2x"></i></a>
         </div>
-        <div class="searchResult" ng-repeat="booth in booths | filter:boothSearch">
+        <div class="searchResult" ng-repeat="booth in booths | filter:boothSearch track by $index">
           <b>{{booth.boothName}}</b><br>
           <span>{{booth.location}}</span>
-          <span>{{booth.categories}}</span>
+          <span><a ng-href="{{booth.fburl}}">Website</a></span><br>
+          <div class="categories">
+            <span ng-repeat="category in booth.categories.split(',')">
+              {{category}}
+            </span>
+          </div>
         </div>
       </div>
     </div>

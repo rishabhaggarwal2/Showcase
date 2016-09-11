@@ -22,7 +22,7 @@ function writeEventData(name, location, time, date, fburl, imageUrl, mapData) {
   });
 }
 
-function writeBoothData(eventName, boothName, location, fburl, categories, mapData) {
+function writeBoothData(eventName, boothName, location, fburl, categories, mapData, coords) {
   
   var postData = {
     event: eventName,
@@ -30,18 +30,32 @@ function writeBoothData(eventName, boothName, location, fburl, categories, mapDa
     location: location,
     categories: categories,
     fburl: fburl,
-    mapData: mapData
+    mapData: coords
   };
 
   var newPostKey = firebase.database().ref('events/' + eventName + '/booths').push().key;
+  mapData[coords.x][coords.y].booth = newPostKey;
+  var gridStore = "";
+  tempArray = [];
+    for (var i = 0; i < mapData.length; i++) {
+      tempArray[i] = [];
+      for(var j = 0; j < mapData[i].length; j++){
+        tempArray[i][j] = {enabled : (mapData[i][j].enabled == true ? 1 : 0), coords: mapData[i][j].coords, booth: mapData[i][j].booth || ""};
+      }
+    };
 
+  gridObject = {mapdata: tempArray, start: [mapData[0][0].left, mapData[0][0].top]};
+  gridStore = gridObject;
   // Write the new post's data simultaneously in the posts list and the user's post list.
   var updates = {};
+  var updates2 = {};
+  updates2['events/' + eventName + '/mapData'] = gridStore;
   updates['events/' + eventName + '/booths/' + newPostKey] = postData;
   console.log("up", updates);
-  return firebase.database().ref().update(updates);
-  
   addNewBoothToEvent(eventName);
+  firebase.database().ref().update(updates2);
+  return firebase.database().ref().update(updates);
+
 }
 
 function addNewBoothToEvent(eventName) {
