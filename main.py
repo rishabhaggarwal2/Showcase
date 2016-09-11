@@ -5,6 +5,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import requests
 import time
+import pyaudio
+import speech_recognition as sr
 
 class makeBrowser(object):
 
@@ -24,24 +26,24 @@ def run():
     websiteURL = "http://google.com" # local address
     driver = webdriver.Chrome()
     driver.get(websiteURL)
+    sr.Microphone(device_index=None, sample_rate=16000, chunk_size=1024)
+    r = sr.Recognizer()    
     while True:
-        r = requests.get("http://google.com/")
-        text=r.content
-        print(r.content)
-        if(text=="quit" or text=="exit"):
-            driver.close()
-        speechClick(driver,text)
-        time.sleep(2)
+        with sr.Microphone() as source:
+            print("Say something!")
+            audio = r.listen(source)
+        text = None
+        try:
+            text=r.recognize_google(audio)
+            print("Google Speech Recognition thinks you said " + text)
+            if(text=="quit" or text=="exit"):
+                driver.close()
+                break
+            speechClick(driver,text)
+        except sr.UnknownValueError:
+            print("Google Speech Recognition could not understand audio")
+        except sr.RequestError as e:
+            print(
+                "Could not request results from Google Speech Recognition service; {0}".format(e))
 
 run()
-    # currStore = None
-    # path = '//div[contains(@class, "store-name")]'
-    # for i in range(4):
-    #     try:
-    #         run_test = WebDriverWait(driver, 120).until(
-    #             EC.presence_of_element_located((By.XPATH, path)))
-    #         run_test.click()
-    #         break
-    #     except:
-    #         pass
-    # elements = driver.find_elements_by_xpath(path)
