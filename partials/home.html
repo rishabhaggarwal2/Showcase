@@ -34,12 +34,12 @@
               <canvas id="c"></canvas>
             </div>
             <div class="createField">
-              <input type="submit" value="Submit" ng-click="submitEvent()" class="eventSubmit">
+              <input type="submit" name="submit" value="Submit" ng-click="submitEvent()" class="eventSubmit">
               </button>
             </div>
           </div>
-          <input type="text" ng-model="eventSearch" ng-hide="creating" placeholder="Search" />
-          <a class="searchButton" ng-click="createNew()" ng-class="flip"><i class="fa fa-plus fa-2x"></i></a>
+          <input name="search" type="text" ng-model="eventSearch" ng-hide="creating" placeholder="Search" />
+          <a class="searchButton" name="create" ng-click="createNew()" ng-class="flip"><i class="fa fa-plus fa-2x"></i></a>
         </div>
         <a ng-href="/#/{{event.name}}" ng-repeat="event in events | filter:eventSearch" class="noDecoration">
           <div class="searchResult">

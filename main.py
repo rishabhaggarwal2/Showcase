@@ -16,7 +16,7 @@ class makeBrowser(object):
         self.current_url = x
 
 
-def speechClick(driver, text, typemode, currElement):
+def speechClick(driver, text, typemode, currElement,websiteURL):
     if(typemode == True):
         # os.system("cliclick -m verbose t:%s kp:%s" %(text,"return"))
         currElement.send_keys(text)
@@ -28,8 +28,10 @@ def speechClick(driver, text, typemode, currElement):
         currElement.click()
     except:
         print("invalid id")
-    if(text == "search"):
+    if(text in ["search","name","location","date","time"]):
         typemode = True
+    elif(text=="home" or text=="main screen"):
+        driver.get(websiteURL)
     return (typemode, currElement)
 
 
@@ -55,7 +57,7 @@ def run():
                 driver.close()
                 break
             (typemode, currElement) = speechClick(
-                driver, text, typemode, currElement)
+                driver, text, typemode, currElement,websiteURL)
         except sr.UnknownValueError:
             print("Google Speech Recognition could not understand audio")
         except sr.RequestError as e:
